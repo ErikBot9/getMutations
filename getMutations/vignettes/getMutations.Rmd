@@ -1,0 +1,77 @@
+---
+title: "getMutations"
+author:
+  name: Erik Bot
+  email: erik.bot@mail.polimi.it
+output: BiocStyle::html_document
+date: "`r Sys.Date()`"
+vignette: >
+  %\VignetteIndexEntry{getMutations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, results='hide', include = FALSE}
+library(getMutations)
+```
+
+Usage:
+
+First of all, it is necessary to correctly load a VCF file, using the 'readVcf' function from the 'VariantAnnotation' package.Then it is necessary to load the reference genome wanted, for example Hsapiens hg19.
+
+```{r, results='hide', include = FALSE}
+library(VariantAnnotation)
+library(GenomicRanges)
+```
+
+```{r}
+vcffile <- system.file("extdata", "chr22.vcf.gz", package="VariantAnnotation")
+
+vcf <- readVcf(vcffile, "hg19")[1:20] # only the first 20 are taken, to speed up the example.
+
+library(BSgenome.Hsapiens.UCSC.hg19)
+```
+
+An important passage that has to be checked is that the sequence names of the VCF file and the ones of the reference genome are the same. If not, use 'renameSeqlevels' of the library 'GenomicRanges'.
+
+```{r}
+vcf <- renameSeqlevels(vcf, 'chr22')
+```
+
+Then you can create a 'mut_file' object with the structured information on the different SNVs of the VCF file. The VCF file and the reference genome are needed, along with a context_length parameter which identifies how many bases will be reported, considering also the mutated base.
+
+```{r}
+mut_file <- getMutations(vcf, Hsapiens, 3)
+
+mut_file
+```
+
+'countTableAll' allows you to build a count table in which there are the absolute frequencies of the mutations, considering also the context_length. You can either use the 'mut_file' object generated before, or provide the VCF file, the reference genome and the context length. 
+
+```{r}
+countTableAll(mut_file)
+
+countTableAll(vcf_file = vcf, ref_genome = Hsapiens, context_length = 3)
+```
+
+If instead you are interested in the absolute frequency of each SNV, without considering extra bases, you can use 'countTableSNV'. Again, you can provide either a 'mut_file' object or provide the VCF file and the reference genome. No context_length parameter is needed in this case.
+
+```{r}
+countTableSNV(mut_file)
+
+countTableSNV(vcf_file = vcf, ref_genome = Hsapiens)
+```
+
+Session info:
+
+```{r}
+sessionInfo()
+```
+
